@@ -159,7 +159,7 @@
 				</div>
 				<div class="modal-footer">
 					<a href="javascript:;" class="btn btn-default pull-left timetableDelete" id="timetableDelete">Delete</a>
-					<a href="javascript:;" class="btn btn-default" id="timetableSubmit">Submit</a>
+					<a href="javascript:;" class="btn btn-default" id="edittimetableSubmit">Submit</a>
 					<button class="btn btn-default" type="button" data-dismiss="modal">Close</button>
 				</div>
 			</div>
@@ -182,9 +182,11 @@
 	var deleteThat ='';
 	var deleteSessionFromTime = '';
 	var toTime;
+	var editSessionDiv;
+	var regExp = /(\d{1,2})\:(\d{1,2})/;
 	$('#myModal').on('shown.bs.modal', function(e) {
 		fromTime = slot.attr('data-booked-upto');
-		console.log(fromTime);
+		
 		$('#session_time_from').val(fromTime);
 
 		toTime = slot.attr('data-to');
@@ -192,11 +194,11 @@
 		$('#session_time_to').val(toTime);
     });
 
+	//create new session functionality
 	$('#timetableSubmit').click(function(){
 			var fn = $('#faculty_name').val();
 			var sn = $('#session_name').val();
 			var to = $('#session_time_to').val();
-			var regExp = /(\d{1,2})\:(\d{1,2})/;
 				
 			var total = parseInt(to .replace(regExp, "$1$2")) - parseInt(fromTime .replace(regExp, "$1$2"));
 			var error = false;
@@ -248,6 +250,59 @@
 			}
 	 });
 	 
+	//update session functionality
+	$('#edittimetableSubmit').click(function(){
+
+			var fn = $('#faculty_name_edit').val();
+			var sn = $('#session_name_edit').val();
+			var to = $('#session_time_to_edit').val();
+			var from = $('#session_time_from_edit').val();
+			var total = parseInt(to .replace(regExp, "$1$2")) - parseInt(fromTime .replace(regExp, "$1$2"));
+			var error = false;
+			//total = total/100;
+
+			if (fn == '') {
+				$('#faculty_name_edit').after('<span class="error">Please enter faculty name<span>');
+				error = true;
+			}
+
+			if (sn == '') {
+				$('#session_name_edit').after('<span class="error">Please enter session name</span>');
+				error = true;
+			}
+
+			if (!error) {	
+
+				var timeDiv = '<div class="session-mix-time">'+from+' - '+to+'</div>';
+				if(parseInt(to .replace(regExp, "$1$2")) < parseInt(toTime .replace(regExp, "$1$2"))){
+						editSessionDiv.replaceWith('<div class="session-data" >'+timeDiv+sn+'<br><b> - '+fn+'</b>'+'<span class="glyphicon glyphicon-remove timetableDelete pull-right" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'"></span><span data-target="#sessionModal" data-toggle="modal" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'" class="glyphicon glyphicon-edit pull-right"></span></div>');
+				}else if(parseInt(to .replace(regExp, "$1$2")) > parseInt(toTime .replace(regExp, "$1$2"))){
+						//if the session is taking to time more than existing td then 
+						//merge the next td also.
+						var nextSlotTo = slot.next().attr('data-to');
+						slot.next().remove();
+						slot.attr('colspan','2');
+						slot.attr('data-to',nextSlotTo);
+						editSessionDiv.replaceWith('<div class="session-data" >'+timeDiv+sn+'<br><b> - '+fn+'</b>'+'<span class="glyphicon glyphicon-remove timetableDelete pull-right" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'"></span><span data-target="#sessionModal" data-toggle="modal" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'" class="glyphicon glyphicon-edit pull-right"></span></div>');
+				}else{
+						editSessionDiv.replaceWith('<div class="session-data" >'+timeDiv+sn+'<br><b> - '+fn+'</b><span class="glyphicon glyphicon-remove timetableDelete pull-right" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'"></span><span data-target="#sessionModal" data-toggle="modal" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'" class="glyphicon glyphicon-edit pull-right"></span></div>');	
+				}
+
+				if (parseInt(slot.attr('data-booked-upto').replace(regExp, "$1$2")) < parseInt(to.replace(regExp, "$1$2"))) {
+					slot.attr('data-booked-upto',to);
+				}
+
+				if (parseInt(slot.attr('data-sessions'))>1 && parseInt(slot.attr('data-sessions'))<3) {
+					slot.children('.session-data').addClass('w50');
+				}else if(parseInt(slot.attr('data-sessions'))>2 && parseInt(slot.attr('data-sessions'))<4){
+					slot.children('.session-data').addClass('w33');
+				}				
+
+				$('#faculty_name_edit').val('');
+				$('#session_name_edit').val('');
+				$('#sessionModal').modal('hide');
+			}
+	 });
 	 //code for editing a session
 	 $('#sessionModal').on('shown.bs.modal', function(e) {
 		 var div = $(e.relatedTarget) // Button that triggered the modal
@@ -257,12 +312,22 @@
 		 var from= div.attr('data-from'); // Extract info from data-* attributes
 	     var to= div.attr('data-to'); // Extract info from data-* attributes
 	     deleteSessionFromTime = from;
-
+	     slot = div.parent().parent('td');
 	     var modal = $(this);
+
 	     modal.find('#faculty_name_edit').val(faculty);
 	     modal.find('#session_name_edit').val(session);
 	     modal.find('#session_time_from_edit').val(from);
-	     modal.find('#session_time_to_edit').val(to);	
+
+	     if (parseInt(to.replace(regExp, "$1$2")) > parseInt(slot.attr('data-booked-upto').replace(regExp, "$1$2"))) {
+	     	modal.find('#session_time_to_edit').val(to);
+	     }else{
+	     	modal.find('#session_time_to_edit').val(to);
+	     	modal.find('#session_time_to_edit').attr('max',to);
+	     	modal.find('#session_time_to_edit').attr('min',from);
+	     }
+	     	
+	     editSessionDiv = div.parent('div');
 	 });
 
  	 //when user clicks on delete session button

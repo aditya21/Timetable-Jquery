@@ -170,6 +170,7 @@
 		</div>
 	</form>
 </div>
+<input type="hidden" name="timetableData" id="timetableData">
 <!-- edit session modal ends here -->
 
 <script type="text/javascript">
@@ -188,6 +189,7 @@
 	var toTime;
 	var editSessionDiv;
 	var regExp = /(\d{1,2})\:(\d{1,2})/;
+	var timetableData = [];
 	$('#myModal').on('shown.bs.modal', function(e) {
 		fromTime = slot.attr('data-booked-upto');
 		
@@ -253,7 +255,13 @@
 				$('#faculty_name').val('');
 				$('#session_name').val('');
 				$('#myModal').modal('hide');
+				var l = timetableData.length;
+				timetableData.push({'faculty_name':fn,'session_name':sn,'from':fromTime,'to':to});
+			
+				slot.children().last().children('span').attr('data-key',timetableData.length-1);
+
 			}
+
 	 });
 	 
 	//update session functionality
@@ -308,6 +316,13 @@
 				$('#faculty_name_edit').val('');
 				$('#session_name_edit').val('');
 				$('#sessionModal').modal('hide');
+				var l = timetableData.length;
+				var key = editSessionDiv.find('.glyphicon-edit').attr('data-key');
+				timetableData[timetableData.length-1].faculty_name=fn;
+				timetableData[timetableData.length-1].session_name=sn;
+				timetableData[timetableData.length-1].from=from;
+				timetableData[timetableData.length-1].to=to;
+				console.log(timetableData);
 			}
 	 });
 	 //code for editing a session
@@ -333,7 +348,7 @@
 	     	modal.find('#session_time_to_edit').attr('max',to);
 	     	modal.find('#session_time_to_edit').attr('min',from);
 	     }
-	     	
+	     
 	     editSessionDiv = div.parent('div');
 	 });
 

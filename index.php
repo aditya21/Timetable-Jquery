@@ -251,15 +251,7 @@
 				
 				slot.attr('data-booked-upto',to);
 						
-				if (parseInt(slot.attr('data-sessions'))>1 && parseInt(slot.attr('data-sessions'))<3) {
-					slot.children('.session-data').addClass('w50');
-					$('.session-mix-time').show();	
-				}else if(parseInt(slot.attr('data-sessions'))>2 && parseInt(slot.attr('data-sessions'))<4){
-					slot.children('.session-data').addClass('w33');
-					$('.session-mix-time').show();
-				}else if(parseInt(slot.attr('data-sessions'))>3 && parseInt(slot.attr('data-sessions'))<5){
-					slot.children('.session-data').addClass('w25');
-				}				
+				addClassTodivSession(slot);
 
 				$('#faculty_name').val('');
 				$('#session_name').val('');
@@ -268,8 +260,8 @@
 				timetableData.push({'faculty_name':fn,'session_name':sn,'from':fromTime,'to':to});
 			
 				slot.children().last().children('span').attr('data-key',timetableData.length-1);
-				console.log(timetableData);
-				$('#timetableData').val(timetableData);
+				
+				appendJsonToInput(timetableData);
 			}
 
 	 });
@@ -308,20 +300,14 @@
 						slot.attr('data-to',nextSlotTo);
 						editSessionDiv.replaceWith('<div class="session-data" >'+timeDiv+sn+'<br><b> - '+fn+'</b>'+'<span class="glyphicon glyphicon-remove timetableDelete pull-right" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'"></span><span data-target="#sessionModal" data-toggle="modal" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'" class="glyphicon glyphicon-edit pull-right"></span></div>');
 				}else{
-						editSessionDiv.replaceWith('<div class="session-data" >'+timeDiv+sn+'<br><b> - '+fn+'</b><span class="glyphicon glyphicon-remove timetableDelete pull-right" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'"></span><span data-target="#sessionModal" data-toggle="modal" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'" class="glyphicon glyphicon-edit pull-right"></span></div>');	
+						editSessionDiv.replaceWith('<div class="session-data" >'+timeDiv+sn+'<br><b> - '+fn+'</b><span class="glyphicon glyphicon-remove timetableDelete pull-right" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'"></span><span data-target="#sessionModal" data-toggle="modal" data-session="'+sn+'" data-faculty="'+fn+'" data-from="'+from+'" data-to="'+to+'" class="glyphicon glyphicon-edit pull-right"></span></div>');
 				}
 
 				if (parseInt(slot.attr('data-booked-upto').replace(regExp, "$1$2")) < parseInt(to.replace(regExp, "$1$2"))) {
 					slot.attr('data-booked-upto',to);
 				}
 
-				if (parseInt(slot.attr('data-sessions'))>1 && parseInt(slot.attr('data-sessions'))<3) {
-					slot.children('.session-data').addClass('w50');
-				}else if(parseInt(slot.attr('data-sessions'))>2 && parseInt(slot.attr('data-sessions'))<4){
-					slot.children('.session-data').addClass('w33');
-				}else if(parseInt(slot.attr('data-sessions'))>3 && parseInt(slot.attr('data-sessions'))<5){
-					slot.children('.session-data').addClass('w25');
-				}				
+				addClassTodivSession(slot);				
 
 				$('#faculty_name_edit').val('');
 				$('#session_name_edit').val('');
@@ -333,7 +319,7 @@
 				timetableData[timetableData.length-1].from=from;
 				timetableData[timetableData.length-1].to=to;
 				
-				$('#timetableData').val(timetableData);
+				appendJsonToInput(timetableData);
 			}
 	 });
 	 //code for editing a session
@@ -404,6 +390,22 @@
 			$('#sessionModal').modal('hide');
 		} else {
 		    // Do nothing!
+		}
+
+		//add json object to the html input
+		function appendJsonToInput(timetableData) {
+			$('#timetableData').val(JSON.stringify(timetableData));
+		}
+
+		//add class to adjust session slots in td
+		function addClassTodivSession(tdSlot) {
+			if (parseInt(tdSlot.attr('data-sessions'))>1 && parseInt(tdSlot.attr('data-sessions'))<3) {
+				tdSlot.children('.session-data').addClass('w50');
+			}else if(parseInt(tdSlot.attr('data-sessions'))>2 && parseInt(tdSlot.attr('data-sessions'))<4){
+				tdSlot.children('.session-data').addClass('w33');
+			}else if(parseInt(tdSlot.attr('data-sessions'))>3 && parseInt(tdSlot.attr('data-sessions'))<5){
+				tdSlot.children('.session-data').addClass('w25');
+			}
 		}
 	}
 </script>
